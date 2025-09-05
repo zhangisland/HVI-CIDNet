@@ -1,4 +1,5 @@
 import os
+import os.path as osp
 import torch
 import glob
 import cv2
@@ -8,6 +9,7 @@ from PIL import Image
 from tqdm import tqdm
 import argparse
 import platform
+from data.util import load_img
 
 mea_parser = argparse.ArgumentParser(description='Measure')
 mea_parser.add_argument('--use_GT_mean', action='store_true', help='Use the mean of GT to rectify the output of the model')
@@ -70,7 +72,7 @@ def calculate_psnr(target, ref):
     psnr = 10.0 * np.log10(255.0 * 255.0 / (np.mean(np.square(diff)) + 1e-8))
     return psnr
 
-def metrics(im_dir, label_dir, use_GT_mean):
+def metrics_DIME(im_dir, label_dir, use_GT_mean):
     avg_psnr = 0
     avg_ssim = 0
     avg_lpips = 0
@@ -89,8 +91,15 @@ def metrics(im_dir, label_dir, use_GT_mean):
             name = item.split('/')[-1]
         else:
             name = item.split('/')[-1]
-            
-        im2 = Image.open(label_dir + name).convert('RGB')
+        
+        # item: osp.basename(item): <seq>_<index>.png
+        # DIME gt path: osp.join(label_dir, seq, index.npy)
+        seq, index_filename = osp.basename(item).split('.')[0].split('_')
+        label_path = osp.join(label_dir, seq, f'{index_filename}.npy')
+        if not osp.exists(label_path):
+            raise FileNotFoundError(f'gt: {label_path} not exists') 
+        im2 = load_img(label_path)
+
         (h, w) = im2.size
         im1 = im1.resize((h, w))  
         im1 = np.array(im1) 

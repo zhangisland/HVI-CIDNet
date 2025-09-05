@@ -1,8 +1,9 @@
 from torchvision.transforms import Compose, ToTensor, RandomCrop, RandomHorizontalFlip, RandomVerticalFlip
-from data.LOLdataset import *
-from data.eval_sets import *
-from data.SICE_blur_SID import *
-from data.fivek import *
+from data.LOLdataset import LOLDatasetFromFolder, LOLv2DatasetFromFolder, LOLv2SynDatasetFromFolder
+from data.eval_sets import SICEDatasetFromFolderEval, DatasetFromFolderEval
+from data.SICE_blur_SID import LOLBlurDatasetFromFolder, SIDDatasetFromFolder, SICEDatasetFromFolder
+from data.fivek import FiveKDatasetFromFolder
+from data.DIMEdataset import DIMEDatasetFromFolder, DIMEDatasetFromFolderEval
 
 def transform1(size=256):
     return Compose([
@@ -51,3 +52,12 @@ def get_fivek_training_set(data_dir,size):
 
 def get_fivek_eval_set(data_dir):
     return SICEDatasetFromFolderEval(data_dir, transform=transform2())
+
+### update 2025/09
+def get_DIME_training_set(data_dir,size):
+    # data_dir: shared_datasets/DIME/np/train
+    return DIMEDatasetFromFolder(data_dir, transform=transform1(size))
+
+def get_DIME_eval_set(data_dir):
+    # data_dir: shared_datasets/DIME/np/test/LQ
+    return DIMEDatasetFromFolderEval(data_dir, transform=transform2())

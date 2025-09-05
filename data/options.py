@@ -1,17 +1,27 @@
 import argparse
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 def option():
     # Training settings
     parser = argparse.ArgumentParser(description='CIDNet')
-    parser.add_argument('--batchSize', type=int, default=8, help='training batch size')
+    parser.add_argument('--batchSize', type=int, default=6, help='training batch size, 8')
     parser.add_argument('--cropSize', type=int, default=256, help='image crop size (patch size)')
     parser.add_argument('--nEpochs', type=int, default=1000, help='number of epochs to train for end')
     parser.add_argument('--start_epoch', type=int, default=0, help='number of epochs to start, >0 is retrained a pre-trained pth')
-    parser.add_argument('--snapshots', type=int, default=10, help='Snapshots for save checkpoints pth')
+    parser.add_argument('--snapshots', type=int, default=1, help='Snapshots for save checkpoints pth, the same as frequency for evaluation')
     parser.add_argument('--lr', type=float, default=1e-4, help='Learning Rate')
     parser.add_argument('--gpu_mode', type=bool, default=True)
     parser.add_argument('--shuffle', type=bool, default=True)
-    parser.add_argument('--threads', type=int, default=16, help='number of threads for dataloader to use')
+    parser.add_argument('--threads', type=int, default=8, help='number of threads for dataloader to use')
 
     # choose a scheduler
     parser.add_argument('--cos_restart_cyclic', type=bool, default=False)
@@ -29,6 +39,7 @@ def option():
     parser.add_argument('--data_train_SID'          , type=str, default='./datasets/Sony_total_dark/train')
     parser.add_argument('--data_train_SICE'         , type=str, default='./datasets/SICE/Dataset/train')
     parser.add_argument('--data_train_fivek'        , type=str, default='./datasets/FiveK/train')
+    parser.add_argument('--data_train_DIME'        , type=str, default='shared_datasets/DIME/np/train')
 
     # validation input
     parser.add_argument('--data_val_lol_blur'       , type=str, default='./datasets/LOL_blur/eval/low_blur')
@@ -39,6 +50,7 @@ def option():
     parser.add_argument('--data_val_SICE_mix'       , type=str, default='./datasets/SICE/Dataset/eval/test')
     parser.add_argument('--data_val_SICE_grad'      , type=str, default='./datasets/SICE/Dataset/eval/test')
     parser.add_argument('--data_test_fivek'         , type=str, default='./datasets/FiveK/test/input')
+    parser.add_argument('--data_val_DIME'        , type=str, default='shared_datasets/DIME/np/test/LQ/')
 
     # validation groundtruth
     parser.add_argument('--data_valgt_lol_blur'     , type=str, default='./datasets/LOL_blur/eval/high_sharp_scaled/')
@@ -49,6 +61,7 @@ def option():
     parser.add_argument('--data_valgt_SICE_mix'     , type=str, default='./datasets/SICE/Dataset/eval/target/')
     parser.add_argument('--data_valgt_SICE_grad'    , type=str, default='./datasets/SICE/Dataset/eval/target/')
     parser.add_argument('--data_valgt_fivek'        , type=str, default='./datasets/FiveK/test/target/')
+    parser.add_argument('--data_valgt_DIME'        , type=str, default='./shared_datasets/DIME/np/test/GT/')
 
     parser.add_argument('--val_folder', default='./results/', help='Location to save validation datasets')
 
@@ -69,13 +82,14 @@ def option():
     parser.add_argument('--grad_clip', type=bool, default=True, help='if gradient fluctuates too much, turn-on it')
     
     
-    # choose which dataset you want to train, please only set one "True"
-    parser.add_argument('--lol_v1', type=bool, default=True)
-    parser.add_argument('--lolv2_real', type=bool, default=False)
-    parser.add_argument('--lolv2_syn', type=bool, default=False)
-    parser.add_argument('--lol_blur', type=bool, default=False)
-    parser.add_argument('--SID', type=bool, default=False)
-    parser.add_argument('--SICE_mix', type=bool, default=False)
-    parser.add_argument('--SICE_grad', type=bool, default=False)
-    parser.add_argument('--fivek', type=bool, default=False)
+    # choose which dataset you want to train
+    parser.add_argument('--lol_v1', action='store_true', help='Use LOL v1 dataset')
+    parser.add_argument('--lolv2_real', action='store_true', help='Use LOL v2 real dataset')
+    parser.add_argument('--lolv2_syn', action='store_true', help='Use LOL v2 synthetic dataset')
+    parser.add_argument('--lol_blur', action='store_true', help='Use LOL blur dataset')
+    parser.add_argument('--SID', action='store_true', help='Use SID dataset')
+    parser.add_argument('--SICE_mix', action='store_true', help='Use SICE mix dataset')
+    parser.add_argument('--SICE_grad', action='store_true', help='Use SICE grad dataset')
+    parser.add_argument('--fivek', action='store_true', help='Use FiveK dataset')
+    parser.add_argument('--DIME', action='store_true', help='Use DIME dataset')
     return parser

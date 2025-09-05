@@ -1,5 +1,4 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import argparse
 from tqdm import tqdm
 from data.data import *
@@ -7,6 +6,7 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from loss.losses import *
 from net.CIDNet import CIDNet
+from loguru import logger
 
 eval_parser = argparse.ArgumentParser(description='Eval')
 eval_parser.add_argument('--perc', action='store_true', help='trained with perceptual loss')
@@ -16,6 +16,7 @@ eval_parser.add_argument('--lol_v2_syn', action='store_true', help='output lol_v
 eval_parser.add_argument('--SICE_grad', action='store_true', help='output SICE_grad dataset')
 eval_parser.add_argument('--SICE_mix', action='store_true', help='output SICE_mix dataset')
 eval_parser.add_argument('--fivek', action='store_true', help='output FiveK dataset')
+eval_parser.add_argument('--DIME', action='store_true', help='output DIME dataset')
 
 eval_parser.add_argument('--best_GT_mean', action='store_true', help='output lol_v2_real dataset best_GT_mean')
 eval_parser.add_argument('--best_PSNR', action='store_true', help='output lol_v2_real dataset best_PSNR')
@@ -35,13 +36,12 @@ eval_parser.add_argument('--unpaired_weights', type=str, default='./weights/LOLv
 
 ep = eval_parser.parse_args()
 
-
-def eval(model, testing_data_loader, model_path, output_folder,norm_size=True,LOL=False,v2=False,unpaired=False,alpha=1.0,gamma=1.0):
+@torch.no_grad()
+def eval_func(model, testing_data_loader, model_path, output_folder, norm_size=True, LOL=False, v2=False, unpaired=False, alpha=1.0, gamma=1.0):
     torch.set_grad_enabled(False)
     model.load_state_dict(torch.load(model_path, map_location=lambda storage, loc: storage))
-    print('Pre-trained model is loaded.')
+    logger.info(f'Pre-trained model is loaded from {model_path}.')
     model.eval()
-    print('Evaluation:')
     if LOL:
         model.trans.gated = True
     elif v2:
@@ -53,15 +53,15 @@ def eval(model, testing_data_loader, model_path, output_folder,norm_size=True,LO
     for batch in tqdm(testing_data_loader):
         with torch.no_grad():
             if norm_size:
-                input, name = batch[0], batch[1]
+                lq_input, name = batch[0], batch[1]
             else:
-                input, name, h, w = batch[0], batch[1], batch[2], batch[3]
+                lq_input, name, h, w = batch[0], batch[1], batch[2], batch[3]
             
-            input = input.cuda()
-            output = model(input**gamma) 
+            lq_input = lq_input.cuda()
+            output = model(lq_input**gamma) 
             
         if not os.path.exists(output_folder):          
-            os.mkdir(output_folder)  
+            os.makedirs(output_folder)
             
         output = torch.clamp(output.cuda(),0,1).cuda()
         if not norm_size:
@@ -70,7 +70,6 @@ def eval(model, testing_data_loader, model_path, output_folder,norm_size=True,LO
         output_img = transforms.ToPILImage()(output.squeeze(0))
         output_img.save(output_folder + name[0])
         torch.cuda.empty_cache()
-    print('===> End evaluation')
     if LOL:
         model.trans.gated = False
     elif v2:
@@ -84,7 +83,7 @@ if __name__ == '__main__':
         raise Exception("No GPU found, or need to change CUDA_VISIBLE_DEVICES number")
     
     if not os.path.exists('./output'):          
-            os.mkdir('./output')  
+        os.makedirs('./output')  
     
     norm_size = True
     num_workers = 1

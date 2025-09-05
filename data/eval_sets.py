@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 class SICEDatasetFromFolderEval(data.Dataset):
     def __init__(self, data_dir, transform=None):
-        super(SICEDatasetFromFolderEval, self).__init__()
+        super().__init__()
         data_filenames = [join(data_dir, x) for x in listdir(data_dir) if is_image_file(x)]
         data_filenames.sort()
         self.data_filenames = data_filenames
@@ -34,7 +34,7 @@ class SICEDatasetFromFolderEval(data.Dataset):
     
 class DatasetFromFolderEval(data.Dataset):
     def __init__(self, data_dir, transform=None):
-        super(DatasetFromFolderEval, self).__init__()
+        super().__init__()
         data_filenames = [join(data_dir, x) for x in listdir(data_dir) if is_image_file(x)]
         data_filenames.sort()
         self.data_filenames = data_filenames
