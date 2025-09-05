@@ -95,7 +95,7 @@ def train(epoch):
         pic_cnt += 1
         pic_last_10 += 1
         if num_iter == train_len:
-            logger.info(f"===> Epoch[{epoch:06d}/{nEpochs:06d}]: Loss: {(loss_last_10/pic_last_10):.6f} || Learning rate: lr={optimizer.param_groups[0]['lr']:.6e}.")
+            logger.info(f"===> Epoch[{epoch:06d}/{opt.nEpochs:06d}]: Loss: {(loss_last_10/pic_last_10):.6f} || Learning rate: lr={optimizer.param_groups[0]['lr']:.6e}.")
             loss_last_10 = 0
             pic_last_10 = 0
             output_img = transforms.ToPILImage()((output_rgb)[0].squeeze(0))
@@ -308,9 +308,9 @@ if __name__ == '__main__':
             # load `model_path` checkpoint and predict+visual results in testing_data_loader
             # saved to opt.val_folder + output_folder: `training/DIME/*.png`
             # f'{seq_name}_{osp.basename(lq_path).split(".")[0]}.png': 091_000.png
-            logger.info(f"===> Epoch[{epoch:06d}] Start Evaluation")
+            logger.info(f"===> Epoch[{epoch:06d}/{opt.nEpochs:06d}] Start Evaluation")
             eval_func(model=model, testing_data_loader=testing_data_loader, model_path=model_out_path, output_folder=opt.val_folder + output_folder, norm_size=norm_size, LOL=opt.lol_v1, v2=opt.lolv2_real, alpha=0.8)
-            logger.info(f"===> Epoch[{epoch:06d}] End Evaluation")
+            logger.info(f"===> Epoch[{epoch:06d}/{opt.nEpochs:06d}] End Evaluation")
             
             
             # im_dir = opt.val_folder + output_folder + '*.png'

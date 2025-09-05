@@ -66,9 +66,16 @@ def eval_func(model, testing_data_loader, model_path, output_folder, norm_size=T
         output = torch.clamp(output.cuda(),0,1).cuda()
         if not norm_size:
             output = output[:, :, :h, :w]
+        for i in range(output.size(0)):
+            img = output[i].detach().cpu()   # [C,H,W]
+
+            img = img[[2,1,0], :, :]  # BGR->RGB
+
+            output_img = transforms.ToPILImage()(img)
+            output_img.save(os.path.join(output_folder, name[i]))
         
-        output_img = transforms.ToPILImage()(output.squeeze(0))
-        output_img.save(output_folder + name[0])
+        # output_img = transforms.ToPILImage()(output.squeeze(0))
+        # output_img.save(output_folder + name[0])
         torch.cuda.empty_cache()
     if LOL:
         model.trans.gated = False
