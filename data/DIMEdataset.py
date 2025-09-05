@@ -29,7 +29,7 @@ class DIMEDatasetFromFolder(data.Dataset):
                 lq_files = [join(seq_dir, f) for f in os.listdir(seq_dir) if is_image_file(f)]
                 lq_files.sort()
                 # debug mode
-                for f in lq_files[:3]:
+                for f in lq_files:
                     gt_path = join(self.data_dir, 'GT', seq, os.path.basename(f))
                     self.lq_data_info.append((f, seq))
                     self.gt_data_info.append((gt_path, seq))
@@ -73,7 +73,7 @@ class DIMEDatasetFromFolderEval(data.Dataset):
             if os.path.exists(seq_dir):
                 lq_files = [join(seq_dir, f) for f in os.listdir(seq_dir) if is_image_file(f)]
                 lq_files.sort()
-                for f in lq_files[:3]:
+                for f in lq_files:
                     self.lq_data_info.append((f, seq))
 
     def __getitem__(self, index):
